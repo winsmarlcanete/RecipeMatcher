@@ -3,14 +3,17 @@ from recommendersAlgorithm import string_match_recommender, brute_force_recommen
 import tkinter as tk
 from tkinter import ttk, messagebox
 from functools import partial
+from PIL import Image, ImageTk
+
 
 df = clean_recipe_data("dataset/recipes.csv")
 
 class RecipeRecommenderApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Recipe Recommender")
+        self.root.title("Recipe Matcher")
         self.ingredients = []
+        self.root.state('zoomed')
 
         self.create_splash_screen()
 
@@ -18,9 +21,20 @@ class RecipeRecommenderApp:
         self.splash_frame = tk.Frame(self.root)
         self.splash_frame.pack(fill="both", expand=True)
 
-        # You can replace this with a real image
-        self.image_label = tk.Label(self.splash_frame, text="Click to Start", bg="lightblue", font=("Arial", 24), width=30, height=10)
-        self.image_label.pack(expand=True)
+        # Get screen dimensions
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        # Load and resize image
+        image = Image.open("assets/home.png")  # <-- use your actual path
+        image = image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)
+        self.splash_photo = ImageTk.PhotoImage(image)
+
+        # Display image as full-screen label
+        self.image_label = tk.Label(self.splash_frame, image=self.splash_photo)
+        self.image_label.pack(fill="both", expand=True)
+
+        # Make the splash image clickable to continue
         self.image_label.bind("<Button-1>", self.open_home_screen)
 
     def open_home_screen(self, event=None):
@@ -28,48 +42,48 @@ class RecipeRecommenderApp:
         self.create_home_screen()
 
     def create_home_screen(self):
-        self.home_frame = tk.Frame(self.root, padx=10, pady=10)
-        self.home_frame.pack(fill="both", expand=True)
+        self.home_frame = tk.Frame(self.root, padx=20, pady=20)
+        self.home_frame.pack(expand=True)
 
         # Ingredient input
-        input_label = tk.Label(self.home_frame, text="Enter Ingredient:")
-        input_label.grid(row=0, column=0, sticky="w")
+        input_frame = tk.Frame(self.home_frame)
+        input_frame.pack(pady=5)
 
-        self.ingredient_entry = tk.Entry(self.home_frame, width=30)
-        self.ingredient_entry.grid(row=0, column=1)
-
-        add_btn = tk.Button(self.home_frame, text="Add", command=self.add_ingredient)
-        add_btn.grid(row=0, column=2)
+        tk.Label(input_frame, text="Enter Ingredient:").pack(side=tk.LEFT)
+        self.ingredient_entry = tk.Entry(input_frame, width=30)
+        self.ingredient_entry.pack(side=tk.LEFT, padx=5)
+        tk.Button(input_frame, text="Add", command=self.add_ingredient).pack(side=tk.LEFT)
 
         # Dropdown for algorithm
-        algo_label = tk.Label(self.home_frame, text="Select Algorithm:")
-        algo_label.grid(row=1, column=0, sticky="w")
+        algo_frame = tk.Frame(self.home_frame)
+        algo_frame.pack(pady=5)
 
+        tk.Label(algo_frame, text="Select Algorithm:").pack(side=tk.LEFT)
         self.algo_choice = tk.StringVar()
-        algo_dropdown = ttk.Combobox(self.home_frame, textvariable=self.algo_choice, values=["String Match", "Brute Force", "Greedy"], state="readonly")
-        algo_dropdown.grid(row=1, column=1)
+        algo_dropdown = ttk.Combobox(algo_frame, textvariable=self.algo_choice,
+                                     values=["String Match", "Brute Force", "Greedy"], state="readonly")
+        algo_dropdown.pack(side=tk.LEFT, padx=5)
         algo_dropdown.current(0)
 
-        # Ingredient list panel
-        tk.Label(self.home_frame, text="Your Ingredients:").grid(row=2, column=0, sticky="nw")
-        self.ingredient_listbox = tk.Listbox(self.home_frame, height=6)
-        self.ingredient_listbox.grid(row=2, column=1, sticky="nsew")
+        # Ingredient list
+        tk.Label(self.home_frame, text="Your Ingredients:").pack(pady=(10, 0))
+        self.ingredient_listbox = tk.Listbox(self.home_frame, height=6, width=40)
+        self.ingredient_listbox.pack(pady=5)
 
-        # Buttons to remove a selected ingredient and clear all ingredients
-        remove_btn = tk.Button(self.home_frame, text="Remove", command=self.remove_ingredient)
-        remove_btn.grid(row=3, column=0, pady=10)
+        # Buttons for Remove and Clear
+        button_frame = tk.Frame(self.home_frame)
+        button_frame.pack(pady=5)
 
-        clear_btn = tk.Button(self.home_frame, text="Clear All", command=self.clear_all_ingredients)
-        clear_btn.grid(row=3, column=2, pady=10)
+        tk.Button(button_frame, text="Remove", command=self.remove_ingredient).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="Clear All", command=self.clear_all_ingredients).pack(side=tk.LEFT, padx=5)
 
-        # Run button
-        run_btn = tk.Button(self.home_frame, text="Recommend", command=self.run_algorithm)
-        run_btn.grid(row=4, column=1, pady=10)
+        # Recommend Button
+        tk.Button(self.home_frame, text="Recommend", command=self.run_algorithm).pack(pady=10)
 
-        # Results panel
-        tk.Label(self.home_frame, text="Results:").grid(row=5, column=0, sticky="nw")
-        self.results_text = tk.Text(self.home_frame, height=10, width=50)
-        self.results_text.grid(row=5, column=1, columnspan=2)
+        # Results
+        tk.Label(self.home_frame, text="Results:").pack(pady=(10, 0))
+        self.results_text = tk.Text(self.home_frame, height=10, width=60)
+        self.results_text.pack()
 
     def add_ingredient(self):
         ingredient = self.ingredient_entry.get().strip().lower()
