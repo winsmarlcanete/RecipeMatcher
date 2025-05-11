@@ -132,20 +132,11 @@ class RecipeRecommenderApp:
         else:
             self.results_text.insert(tk.END, "No matching recipes found.\n")
 
-app = FastAPI()
-
-class InputData(BaseModel):
-    value: int
-
-@app.post("/process/")
-def process_data(data: InputData):
-    result = data.value * 2
-    return {"result": result}
 
 # Start the app
 if __name__ == "__main__":
     root = tk.Tk()
     app = RecipeRecommenderApp(root)
+
     root.mainloop()
 
-    print(df.head())
