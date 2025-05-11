@@ -56,3 +56,6 @@ def greedy_recommender(df, user_ingredients, top_n=5):
     results = [{"name": row['recipe_name'], "score": row['match_score']} for _, row in top_matches.iterrows()]
 
     return results
+from dataPreprocess import clean_recipe_data
+from recommendersAlgorithm import string_match_recommender, brute_force_recommender, greedy_recommender
+df = clean_recipe_data("dataset/recipes.csv")
