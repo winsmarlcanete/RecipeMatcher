@@ -1,8 +1,15 @@
 from dataPreprocess import clean_recipe_data
+from recommendersAlgorithm import string_match_recommender, brute_force_recommender, greedy_recommender
 
 df = clean_recipe_data("dataset/recipes.csv")
+user_ingredients = ['egg', 'flour', 'milk']
 
-# Display the cleaned recipe names and ingredients
-for index, row in df[['recipe_name', 'ingredients']].iterrows():
-    print(f"Recipe: {row['recipe_name']}")
-    print(f"Ingredients: {row['ingredients']}\n")
+print("=== String Match ===")
+print(string_match_recommender(df, user_ingredients))
+
+print("\n=== Brute Force ===")
+print(brute_force_recommender(df, user_ingredients))
+
+print("\n=== Greedy Match ===")
+print(greedy_recommender(df, user_ingredients))
+
