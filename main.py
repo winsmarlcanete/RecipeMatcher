@@ -4,7 +4,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from functools import partial
 from PIL import Image, ImageTk
-
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 df = clean_recipe_data("dataset/recipes.csv")
 
@@ -130,6 +131,16 @@ class RecipeRecommenderApp:
                 self.results_text.insert(tk.END, f"Recipe: {recipe['name']} - Match: {recipe['score']}\n")
         else:
             self.results_text.insert(tk.END, "No matching recipes found.\n")
+
+app = FastAPI()
+
+class InputData(BaseModel):
+    value: int
+
+@app.post("/process/")
+def process_data(data: InputData):
+    result = data.value * 2
+    return {"result": result}
 
 # Start the app
 if __name__ == "__main__":
