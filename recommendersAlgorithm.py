@@ -1,35 +1,58 @@
-#function for string match algorithm
+# Function for string match algorithm
 def string_match_recommender(df, user_ingredients, top_n=5):
     user_ingredients = [i.lower().strip() for i in user_ingredients]
 
     df['match_score'] = df['ingredients_list'].apply(
-        lambda ingredients: len(set(ingredients).intersection(user_ingredients))
+        lambda ingredients: (len(set(ingredients).intersection(user_ingredients)) / len(ingredients)) * 100
     )
 
-    return df[df['match_score'] > 0].sort_values(by='match_score', ascending=False).head(top_n)
+    top_matches = df[df['match_score'] > 0].sort_values(by='match_score', ascending=False).head(top_n)
 
-#function for brute force algorithm
-def brute_force_recommender(df, user_ingredients, top_n=5):
+    # Convert to a list of dictionaries
+    results = [{"name": row['recipe_name'], "score": row['match_score']} for _, row in top_matches.iterrows()]
+
+    return results
+
+
+# Function for brute force algorithm
+def brute_force_recommender(df, user_ingredients, top_n=5, verbose=True):
     user_ingredients = [i.lower().strip() for i in user_ingredients]
 
-    def is_subset(ingredients, available):
-        return all(item in available for item in ingredients)
+    def percent_match(ingredients, available):
+        return (sum(1 for item in ingredients if item in available) / len(ingredients)) * 100
 
     df['match_score'] = df['ingredients_list'].apply(
-        lambda ingredients: len(ingredients) if is_subset(ingredients, user_ingredients) else 0
+        lambda ingredients: percent_match(ingredients, user_ingredients)
     )
 
-    return df[df['match_score'] > 0].sort_values(by='match_score', ascending=False).head(top_n)
+    matched_df = df[df['match_score'] > 0].sort_values(by='match_score', ascending=False)
 
-#function for greedy algorithm
+    # Print verbose output if needed
+    if verbose:
+        print("\nTop Brute Force Matches:")
+        for _, row in matched_df.head(top_n).iterrows():
+            print(f"Recipe: {row['recipe_name']} | Match Score: {row['match_score']:.2f}%")
+            print(f"Ingredients: {row['ingredients']}\n")
+
+    # Convert to a list of dictionaries
+    results = [{"name": row['recipe_name'], "score": row['match_score']} for _, row in matched_df.head(top_n).iterrows()]
+
+    return results
+
+
+# Function for greedy algorithm
 def greedy_recommender(df, user_ingredients, top_n=5):
     user_ingredients = [i.lower().strip() for i in user_ingredients]
 
     def greedy_score(recipe_ingredients):
         matched = set(recipe_ingredients).intersection(user_ingredients)
-        # Give higher score to recipes that use a large % of their ingredients
-        return len(matched) / len(recipe_ingredients)
+        return (len(matched) / len(recipe_ingredients)) * 100
 
     df['match_score'] = df['ingredients_list'].apply(greedy_score)
 
-    return df[df['match_score'] > 0].sort_values(by='match_score', ascending=False).head(top_n)
+    top_matches = df[df['match_score'] > 0].sort_values(by='match_score', ascending=False).head(top_n)
+
+    # Convert to a list of dictionaries
+    results = [{"name": row['recipe_name'], "score": row['match_score']} for _, row in top_matches.iterrows()]
+
+    return results
