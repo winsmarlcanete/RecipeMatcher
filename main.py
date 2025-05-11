@@ -137,6 +137,5 @@ class RecipeRecommenderApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = RecipeRecommenderApp(root)
-
     root.mainloop()
 
